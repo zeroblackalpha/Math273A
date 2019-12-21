@@ -1,0 +1,36 @@
+\BOOKMARK [1][-]{section.1}{The Problem}{}% 1
+\BOOKMARK [2][-]{subsection.1.1}{Interpretation}{section.1}% 2
+\BOOKMARK [1][-]{section.2}{Applications}{}% 3
+\BOOKMARK [1][-]{section.3}{Properties}{}% 4
+\BOOKMARK [2][-]{subsection.3.1}{Coercivity}{section.3}% 5
+\BOOKMARK [2][-]{subsection.3.2}{Continuity}{section.3}% 6
+\BOOKMARK [2][-]{subsection.3.3}{Convexity}{section.3}% 7
+\BOOKMARK [2][-]{subsection.3.4}{Bounded Hessian}{section.3}% 8
+\BOOKMARK [2][-]{subsection.3.5}{Minimizers}{section.3}% 9
+\BOOKMARK [2][-]{subsection.3.6}{Duality}{section.3}% 10
+\BOOKMARK [1][-]{section.4}{Simplex}{}% 11
+\BOOKMARK [2][-]{subsection.4.1}{Idea}{section.4}% 12
+\BOOKMARK [2][-]{subsection.4.2}{Implementation}{section.4}% 13
+\BOOKMARK [2][-]{subsection.4.3}{Convergence}{section.4}% 14
+\BOOKMARK [2][-]{subsection.4.4}{Limitations}{section.4}% 15
+\BOOKMARK [1][-]{section.5}{Proximal Gradient Descent}{}% 16
+\BOOKMARK [2][-]{subsection.5.1}{Idea}{section.5}% 17
+\BOOKMARK [2][-]{subsection.5.2}{Implementation}{section.5}% 18
+\BOOKMARK [2][-]{subsection.5.3}{Convergence}{section.5}% 19
+\BOOKMARK [2][-]{subsection.5.4}{Starting Condition}{section.5}% 20
+\BOOKMARK [2][-]{subsection.5.5}{Stopping Condition}{section.5}% 21
+\BOOKMARK [2][-]{subsection.5.6}{Limitations}{section.5}% 22
+\BOOKMARK [2][-]{subsection.5.7}{Other Notes}{section.5}% 23
+\BOOKMARK [1][-]{section.6}{Primal Dual Hybrid Gradient}{}% 24
+\BOOKMARK [2][-]{subsection.6.1}{Idea}{section.6}% 25
+\BOOKMARK [2][-]{subsection.6.2}{Implementation}{section.6}% 26
+\BOOKMARK [2][-]{subsection.6.3}{Convergence}{section.6}% 27
+\BOOKMARK [2][-]{subsection.6.4}{Starting Point}{section.6}% 28
+\BOOKMARK [2][-]{subsection.6.5}{Stopping Condition}{section.6}% 29
+\BOOKMARK [2][-]{subsection.6.6}{Limitations}{section.6}% 30
+\BOOKMARK [1][-]{section.7}{Miscellaneous}{}% 31
+\BOOKMARK [2][-]{subsection.7.1}{Other Ideas}{section.7}% 32
+\BOOKMARK [2][-]{subsection.7.2}{Integer Linear Programming}{section.7}% 33
+\BOOKMARK [1][-]{section.8}{Results}{}% 34
+\BOOKMARK [2][-]{subsection.8.1}{Hypercube}{section.8}% 35
+\BOOKMARK [2][-]{subsection.8.2}{General Convex Polytope}{section.8}% 36

@@ -1,0 +1,555 @@
+\documentclass[letterpaper,twocolumn,12pt]{article}
+\usepackage{usenix2019_v3}
+
+% to be able to draw some self-contained figs
+\usepackage{tikz}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{bbm}
+\usepackage{multirow}
+\usepackage[ruled,vlined]{algorithm2e}
+
+% inlined bib file
+\usepackage{filecontents}
+
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+
+%-------------------------------------------------------------------------------
+\begin{filecontents}{\jobname.bib}
+%-------------------------------------------------------------------------------
+@Article{Bronstein2008,
+  author="Bronstein, E. M.",
+  title="Approximation of convex sets by polytopes",
+  journal="Journal of Mathematical Sciences",
+  year="2008",
+  month="Sep",
+  day="01",
+  volume="153",
+  number="6",
+  pages="727--762",
+  abstract="The survey contains results related to different aspects of polyhedral approximation of convex bodies and some adjacent problems.",
+  issn="1573-8795",
+  doi="10.1007/s10958-008-9144-x",
+  url="https://doi.org/10.1007/s10958-008-9144-x"
+}
+@misc{Saunders,
+  author = "Saunders, Michael",
+  institution = "Stanford University",
+  howpublished = "Lecture Notes",
+  title = "Notes On First-Order Methods for Minimizing Smooth Functions",
+  url="https://web.stanford.edu/class/msande318/notes/notes-first-order-smooth.pdf"
+}
+@unpublished{Chambolle2010,
+  title = "A first-order primal-dual algorithm for convex problems with applications to imaging",
+  author = "Chambolle, Antonin and Pock, Thomas",
+  url = "https://hal.archives-ouvertes.fr/hal-00490826",
+  note = "working paper or preprint",
+  year = "2010",
+  month = "Jun"
+}
+@inproceedings{Chambolle2011,
+  title = "Diagonal preconditioning for first order primal-dual algorithms in convex optimization",
+  author = "Thomas Pock and Antonin Chambolle",
+  year = "2011",
+  language = "English",
+  booktitle = "Proceedings of ICCV 2011",
+  publisher = ".",
+}
+@article{Pivot,
+ title = {New Finite Pivoting Rules for the Simplex Method},
+ journal = {Math. Oper. Res.},
+ issue_date = {May 1977},
+ volume = {2},
+ number = {2},
+ month = may,
+ year = {1977},
+ issn = {0364-765X},
+ pages = {103--107},
+ numpages = {5},
+ url = {http://dx.doi.org/10.1287/moor.2.2.103},
+ doi = {10.1287/moor.2.2.103},
+ publisher = {INFORMS}
+}
+@article{Minty,
+ author = {V. Klee and G.J. Minty.},
+ title = { How Good is the Simplex Algorithm?},
+ journal = {Inequalities},
+ issue_date = {May 1977},
+ volume = {III},
+ pages = {159-175},
+ numpages = {27},
+ publisher = {Academic Press}
+} 
+@article{Gubin,
+title = "The method of projections for finding the common point of convex sets",
+journal = "USSR Computational Mathematics and Mathematical Physics",
+volume = "7",
+number = "6",
+pages = "1 - 24",
+year = "1967",
+issn = "0041-5553",
+doi = "https://doi.org/10.1016/0041-5553(67)90113-9",
+url = "http://www.sciencedirect.com/science/article/pii/0041555367901139",
+author = "L.G. Gubin and B.T. Polyak and E.V. Raik"
+}
+\end{filecontents}
+
+%-------------------------------------------------------------------------------
+\begin{document}
+%-------------------------------------------------------------------------------
+
+%don't want date printed
+\date{}
+
+% make title bold and 14 pt font (Latex default is non-bold, 16 pt)
+\title{\Large \bf Linear Programming:\\
+  A Classic Example of Constrained Convex Optimization}
+
+%for single author (just remove % characters)
+\author{
+{\rm Henry Ou}\\
+University of California Los Angeles
+} % end author
+
+\maketitle
+
+%-------------------------------------------------------------------------------
+\begin{abstract}
+%-------------------------------------------------------------------------------
+Linear programming is one of the simplest possible forms of constrained optimization.
+It is of particular interest because it has an existing solution technique in the form
+of the simplex method which guarantees an exact solution in exponential time. This
+provides both a great way to judge exactly how close an optimization technique is to
+the true solution and raises hopes that an optimization technique may be able to reach
+a solution within a small $\epsilon$ of the true solution in polynomial time.
+\end{abstract}
+
+
+%-------------------------------------------------------------------------------
+\section{The Problem}
+%-------------------------------------------------------------------------------
+
+Linear programming problems are typically represent in the following canonical form:
+\begin{align*}
+    \max c^\intercal x\\
+    \text{subject to } Ax\leq b\\
+    \text{and } x\geq 0
+\end{align*}
+where $x$ is the vector of variables to be determined, $c$ and $b$ are known vectors,
+$A$ is a known matrix, and $\geq$/$\leq$ are the entry-wise inequalities. We note in
+particular that $x$ can be extended to the real line by taking component-wise
+$x_i=x_i^*-x_i^{**}$ where $x_i^*,x_i^{**}\geq 0$.
+
+\subsection{Interpretation}
+The problem is a simple linear function constrained to exist within the intersection
+of finitely many half spaces in $\mathbb{R}_+^n$, each defined by the entry-wise
+linear inequalities in $Ax\leq b$. The result is a convex polytope, possibly unbounded.
+
+%-------------------------------------------------------------------------------
+\section{Applications}
+%-------------------------------------------------------------------------------
+Despite the simplicity of the problem in regards to both the objective function and
+the domain, the problem is broadly applicable in a variety of fields. Problems in
+assignment, routing, scheduling can all frequently be modelled as a linear relationship
+over some domain of feasible solutions (in the real world sense).
+The idea of restricting the problem to one on a convex polytope is likewise not
+particularly limiting, as it is appropriate to approximate any bounded convex domain in
+$\mathbb{R}^n$ by a polytope\cite{Bronstein2008}.
+
+%-------------------------------------------------------------------------------
+\section{Properties}
+%-------------------------------------------------------------------------------
+\subsection{Coercivity}
+The above function is clearly not coercive, as choosing $x=-sc^\intercal$, 
+$s\in\mathbb{R}_+$, we get that 
+$\lim_{s\to\infty} c^\intercal (-sc)=lim_{s\to\infty} -s\|c\|^2\to -\infty$.
+
+\subsection{Continuity}
+The objective function is linear, which is clearly continuous and differentiable
+over all of $\mathbb{R}^n$, and thus also continuous and differentiable over our
+domain of consideration. 
+$$|c^\intercal x-c^\intercal y|=|c^\intercal(x-y)|\leq\|c\|\|x-y\|$$
+and
+$$\|\nabla f(x)-\nabla f(y)\|=\|c-c\|=0\leq k\|x-y\|$$
+So we have that the function is both Lipschitz continuous and smooth.
+
+\subsection{Convexity}
+Let us first check that the constraints result in a convex domain. $x\geq 0$ as a
+linear combination of positive vectors with positive coefficients is still clearly
+positive. Letting $x$ and $x^*$ be such that $Ax\leq b$ and $Ax^*\leq b$, we have
+that $A(px+(1-p)x^*)=A(px)+A(1-p)x^*\leq pb+(1-p)b=b$. Thus each condition results
+in a convex domain, and the intersection of convex sets is itself convex.
+As the objective function is linear, we have that
+$c^\intercal (tx_0+(1-t)x_1)=tc^\intercal x_0+(1-t)c^\intercal x_1$ for all
+$x_0$ and $x_1$ in our domain. By the equality, we have that the objective function
+is both convex and concave.
+
+\subsection{Bounded Hessian}
+We notice that $D^2(c^\intercal x)=0$ so that $D^2(c^\intercal x)\preceq\lambda I$
+for all $\lambda\in\mathbb{R}_+$.
+
+\subsection{Minimizers}
+We note that the derivative of the objective function is $c$ which is non-zero at
+any given point $x$,
+so we know that any minimizer must exist at the boundary of the domain. It is clear
+that if the given domain is unbounded or empty, that it is possible for no minimizer
+to exist. Otherwise, we have a minimizer from the continuity and compactness of the
+problem. Thus we can limit our search for the minimizer to the boundary of the polytope.
+
+We can further reduce the search space to simply the vertices of the polytope, as
+we can take the projection of the subsets of the hyperplanes represent the faces of the
+polytope onto the line spanned by the gradient vector. It is clear that the extremal
+points of the projected interval must be either the projection of the whole face,
+an edge, or and vertex. As all three possibilities contain the vertices, at least one
+optimal solution must be a vertex.
+
+\subsection{Duality}
+We shall formulate the Lagrangian dual problem for linear programming. The Lagrangian is
+as follows
+$$\min_{x\geq 0}\max_{\lambda\geq 0} c^\intercal x+\lambda^\intercal(Ax-b)$$
+We notice that the above is equivalent to
+\begin{align*}
+  \min_{x\geq 0}\max_{\lambda\geq 0} (c^\intercal+\lambda^\intercal A)x-\lambda^\intercal b\\
+  \min_{x\geq 0}\max_{\lambda\geq 0} -b^\intercal\lambda+x^\intercal(A^\intercal\lambda+c)\\
+  \max_{x\geq 0}\max_{\lambda\geq 0} b^\intercal\lambda-x^\intercal(A^\intercal\lambda+c)\\
+  \max_{\lambda\geq 0}\max_{x\geq 0} b^\intercal\lambda-x^\intercal(A^\intercal\lambda+c)\\
+  \max_{\lambda\geq 0}\max_{x\leq 0} b^\intercal\lambda+x^\intercal(A^\intercal\lambda+c)
+\end{align*}
+which is the lagrange multiplier of the following dual problem:
+\begin{align*}
+  \max b^\intercal\lambda\\
+  \text{subject to } A^\intercal\lambda\geq c\\
+  \text{and } \lambda\geq 0
+\end{align*}
+
+It is clear that by repeating this procedure for the dual problem, we reobtain a problem
+of the canonical form. Letting $p^*$ and $d^*$ be the optimal values of the primal and
+dual problems respectively. Then by the Weak Duality Theorem, we have that
+$$p^*\leq d^*\leq p^*$$
+and as such $p^*=d^*$. The problem is strongly dual.
+
+%-------------------------------------------------------------------------------
+\section{Simplex}
+%-------------------------------------------------------------------------------
+\subsection{Idea}
+From the above result on the existence of minimizers at the vertices of the polytope, we
+can try searching the vertices one at a time.
+
+\subsection{Implementation}
+Implementation details are omitted as this paper is focused on more traditional
+optimization techniques.
+
+\subsection{Convergence}
+On a machine with
+infinite precision, we note that the process must result in the exact value in
+finite time because the process exhaustively searches through the vertices of the
+polytope, of which there are a finite number. The only concern is that cycling
+could possibly occur during the move from vertex to vertex the algorithm flip flops between these two vertices.
+There exist existing implementations of the pivot from vertex to vertex that avoids
+cycling\cite{Pivot}.
+
+\subsection{Limitations}
+There exist strategies to remove from consideration specific vertices as to reduce the
+number of searches necessary.
+However, the fact remains that for a dimension
+$n$ polytope, there are $O(2^n)$ vertices. Moreover, to the best of our knowledge,
+given any method of pivoting from one vertex to another, it is possible to construct
+a worst case polytope for which the simplex algorithm has to visit a non-polynomial many
+of these vertices. The Klee-Minty cube is a classic example that causes most simplex
+method variants to visit every vertex\cite{Minty}.
+
+%-------------------------------------------------------------------------------
+\section{Proximal Gradient Descent}
+%-------------------------------------------------------------------------------
+\subsection{Idea}
+Given an algorithm that has guaranteed exact solutions but bad time complexity,
+we would like to perform the standard trick for a problem of this type. We relax the
+condition that requires the solution to be exact (real world machines are finite
+precision anyways!) and instead iteratively try to obtain a "close enough" solution.
+
+Given that the problem is convex, a first idea might be proximal gradient descent.
+
+\subsection{Implementation}
+Let $C$ be the set where $x\geq 0$ and $Ax\leq b$.
+We can consider optimizing the function $f(x)=c^\intercal x+\mathbbm{1}_C(x)$, where
+$$\mathbbm{1}_C(x) = 
+\begin{cases}
+  0 &\quad\text{if } x\in C\\
+  +\infty &\quad\text{otherwise}\\
+\end{cases}
+$$
+As our objective function must take finite values on any bounded domain, the optimal
+value must reside within the constrained domain and the objective function and $f(x)$
+agree on the constrained set. Thus the two problems are equivalent. Then taking the
+proximal operator of $\mathbbm{1}_C(x)$, we get
+\begin{align*}
+&\argmin_{x}\mathbbm{1}_C(x)+\frac{\lambda}{2}\|x-v_n\|^2\\
+=&\argmin_{x}
+\begin{cases}
+  \frac{\lambda}{2}\|x-v_n\|^2 &\quad\text{if } x\in C\\
+  +\infty &\quad\text{otherwise}\\
+\end{cases}\\
+=&argmin_{x\in C} \frac{\lambda}{2}\|x-v_n\|^2
+\end{align*}
+which is simply the projection onto $C$. The method reduces to projected gradient
+descent.
+
+\begin{algorithm}
+\SetAlgoLined
+\KwResult{Solution to the linear programming problem}
+  $\hat{x}_0\in\mathbb{R}_+^n,\; L>0$\\
+  $x_0 = \argmin{y\in C} \|x-y\|_2^2$\\
+  \While{Stopping condition not reached}
+  {
+  $\hat{x}_{k+1} = x_k-\frac{1}{L}c$\\
+  $x_{k+1} = \argmin{y\in C} \|\hat{x}_k-y\|_2^2$
+  }
+  \caption{Projected Gradient Descent}
+\end{algorithm}
+
+\subsection{Convergence}
+The Hessian of the objective function is bounded by $\lambda I$ for all $\lambda\geq 0$,
+so any choice of step size is possible. While it may be tempting to improve the convergence
+rate of the method by picking immensely large choices of step size, we need to take care
+to avoid avoid situations where finite precision can lead to numerical instability.
+We know that if the objective function is Lipschitz smooth and convex and the domain
+$C$ is convex, we have that projected gradient descent with step-size $\frac{1}{L}$
+satisfies
+$$f(x_k)-f(x^*)\leq \frac{L}{2k}\|x^*-x_0\|_2^2$$
+and thus we have the method converges within $\epsilon$ of the optimum with
+$O(\frac{L}{\epsilon})$ steps\cite{Saunders}. Notice that by taking the step size to
+infinity, this method becomes a one step method.
+
+\subsection{Starting Condition}
+As this method assumes an orthogonal projection into the set is easy, it suffices to
+pick any point on the interior of the domain, as for a bounded domain, this provides
+an upper bound on $\|x^*-x_0\|_2^2$.
+
+\subsection{Stopping Condition}
+If we know that the polytope is bounded by some ball of radius $R$, by the above convergence
+result, it suffices to choose $k$ sufficiently large such that $\frac{2LR^2}{k}\leq\epsilon$.
+This gives us an upper bound on the number of iterations necessary. It is generally reasonable to assume
+some known finite bound on $R$ is known in real world problems.
+
+Sometimes, with a good initial guess convergence occurs much faster than the upper
+bound $k$ requires. In these cases, a common technique is to pick some $\mu$ such that
+$\|x_{k+1}-x_k\|\leq\mu$. This does not have the same convergence guarantees, but as
+the objective function is well-behaved, it serves as an appropriate substitute.
+
+\subsection{Limitations}
+Although the convex polytope seems like a simple geometry, projection unto the domain
+$Ax\leq b$ and $x\geq 0$ is a very difficult task to
+perform in actuality. As a consequence, we can only apply this technique to polytopes
+with specific geometries, like a hypercube. This greatly reduces the applicability of
+the method to linear programming problems. In addition, these simple polytopes also
+have relevant pivoting rules that generally result in linear performance, defeating the
+primary purpose of moving to an iterative method.
+
+\subsection{Other Notes}
+We argue briefly that once projected gradient descent has stepped our point outside the
+constraints, the projection will heretofore remain on the boundary. This is because
+any projection from outside the set onto the set results in a boundary point. Furthermore
+by the convexity of the constrained set, there must be no more points in the direction
+of the gradient direction. As such, projected gradient descent is a method that walks
+along the faces of the polytope, instead of just the vertices.
+
+%-------------------------------------------------------------------------------
+\section{Primal Dual Hybrid Gradient}
+%-------------------------------------------------------------------------------
+\subsection{Idea}
+The standard projected gradient descent is less useful than we would hope as we have
+difficulty projecting unto the set $C$ where $Ax\leq b$ and $x\geq 0$. However, it is easy to
+project unto the sets $Ax=b$ and $x\geq 0$ individually. The constraints $Ax\leq B$ and
+$x\geq 0$ can be converted into the above form through the introduction of slack variabls $s$
+though $Ax+Is=b$ and $x,s\geq 0$. We would like to in some
+sense decouple the projection onto these two seperate sets into the optimization method,
+which the primal-dual class of algorithms provides.
+
+\subsection{Implementation}
+Primal-dual hybrid gradient works on a function of the form 
+$$\min_{x\in X}\max_{y\in Y} f(x)+y^\intercal Ax-g(y)$$
+where $f$ represents the primal problem and $g$ represents the dual problem. It is clear from
+the above argument on the duality of the linear programming problem that the Lagrangian
+exactly satisfies this as
+\begin{align*}
+  \min_{x\geq 0}\max_{y\geq 0} c^\intercal x+y^\intercal(Ax-b)\\
+  =&\min_{x\geq 0}\max_{y\geq 0} c^\intercal x+y^\intercal Ax-y^\intercal b
+\end{align*}
+where $f(x)=c^\intercal x$ and $g(y)=y^\intercal b$, the primal and dual problems
+respectively.
+
+\begin{algorithm}
+\SetAlgoLined
+\KwResult{Solution to the linear programming problem}
+  $x_0\in\mathbb{R}_+^n,\;y_0\in\mathbb{R}_+^m,\;\sigma>0,\;\tau>0$\\
+  \While{Stopping condition not reached}
+  {
+    $\hat{x}_{k+1}=x_k-\tau A^\intercal y$\\
+    $x_{k+1}=\argmin_{x\geq 0} c^\intercal x+\frac{1}{2\tau}\|x-\hat{x}_{k+1}\|^2$\\
+    $\bar{x}_{k+1}=x_{k+1}+\Theta(x_{k+1}-x_k)$\\
+    $\hat{y}_{k+1}=y_k+\sigma A\bar{x}_{k+1}$\\
+    $y_{k+1}=\argmin_{y\geq 0} b^\intercal y+\frac{1}{2\sigma}\|y-\hat{y}_{k+1}\|^2$
+  }
+  \caption{Primal-Dual Hybrid Gradient}
+\end{algorithm}
+In particular, $c^\intercal x+\frac{1}{2\tau}\|x-\hat{x}_{k+1}\|^2$ is
+a convex function with derivative $c+\frac{1}{\tau}(x-\hat{x}_{k+1})$, so that the
+optimal $x$ is $\hat{x}_{k+1}-\tau c$ without domain restrictions. As the above
+function is clearly coercive (it is quadratic with a positive coefficient on the squared
+term), we have that 
+$x_{k+1}=\max(0,\hat{x}_{k+1}-\tau c)$.
+A similar argument applies for $y_{k+1}$.
+
+\subsection{Convergence}
+Letting $\Theta=1$ and $\tau\sigma\leq\frac{1}{L^2}$, where $L=\|A\|$, the standard
+matrix norm, with a finite dimensional polytope, we have the following convergence
+results:
+
+$x_k\rightarrow x*$ and $y_k\rightarrow y*$ where  $(x^*,y^*)$ is a saddle point of
+our Lagrangian function.
+
+Let $x_N=(\sum_1^N x_n)/N$ and $y_N=(\sum_1^N y_n)/N$. For any bounded
+$B_1\times B_2\in X\times Y$, we have that
+\begin{align*}
+G_{B_1\times B_2}(x_N, y_N)\leq \\
+\frac{1}{N}(\sup_{(x,y)\in B_1\times B_2}\frac{\|x-x_0\|^2}{2\tau}+\frac{\|y-y_0\|^2}{2\sigma})
+\end{align*}
+where $G_{B_1\times B_2}(x, y)=\max_{y^*\in B_2} f(x)+y^{*\intercal} Ax-g(y^*)-\min_{x^*\in B_1}f(x^*)+y^\intercal Ax^*-g(y)$.
+the partial primal-dual gap. This value is zero only if $(x,y)$ is a saddle point,
+and therefore an optimal solution \cite{Chambolle2010}.
+
+\subsection{Starting Point}
+Similar to proximal gradient descent, having a starting point inside the domain gives
+an upper bound on $\|x-x_0\|^2$ and $\|y-y_0\|^2$ if the domain is bounded. As
+$Ax\leq b$ and $x\geq 0$ are both convex sets, the Projection Onto Convex Sets method
+gives a linear time convergence algorithm onto the interior of the intersection of
+the two sets (not necessarily orthogonal)\cite{Gubin}.
+
+\subsection{Stopping Condition}
+Using the same argument as in proximal gradient descent, it suffices to choose an
+$R$ such that the domain is bounded by a ball of radius $R$, and then pick an $N$
+sufficiently large so that the partial primal-dual gap satisfies a specific tolerance.
+
+Likewise, terminating the iteration when improvement gets sufficiently small is also
+a common technique for any convergent method, but without the same guarantees the above
+has. Note that trying to actually calculate the partial primal-dual gap is again
+a linear programming problem.
+
+\subsection{Limitations}
+Observing the below results, it is clear that the PDHG method does not perform
+well on general linear programming problems.
+However the primal dual idea of solving linear programs has been shown to work
+quite well for some for some extremely large structured programs arising in image
+processing. \cite{Chambolle2011}
+
+%-------------------------------------------------------------------------------
+\section{Miscellaneous}
+%-------------------------------------------------------------------------------
+\subsection{Other Ideas}
+The current state of the art for linear programming is generally considered to be
+the simplex methods and interior point methods. Interior point methods expands on
+the idea of traversing the vertices/faces
+of the polytope to the interior of the polytope (which the optimal solution cannot
+lie). This is done through the use of barrier functions in which the value rises
+rapidly towards $+\infty$ as a point approaches the boundary, guaranteeing that the
+iterate remains in the interior of the polytope. A parameter $\mu$ is
+iteratively decreased allowing the next iterate to get closer to the boundary before
+suffering the rapid increase in objective value.
+
+\subsection{Integer Linear Programming}
+The integer linear programming problems requires that $x\in\mathbb{N}^n$ instead of
+$x\geq 0$ and cannot be solved using any of the above methods in general.
+
+%-------------------------------------------------------------------------------
+\section{Results}
+%-------------------------------------------------------------------------------
+The code is written in matlab using varying levels of optimization and do not
+represent the full potential of each method. The results are only provided for
+analyzing trends.
+
+\subsection{Hypercube}
+The following results are based on a linear programming problem constrained to lie
+within a hypercube as to make projection in the proximal gradient descent case easy.
+The true solution is easy to obtain, by picking the extremal value in each dimension
+as to minimize the objective.
+
+The problem is so easy that the preprocessor for Matlab's linprog routine found the
+solution without iteration.
+
+\begin{table}[]
+\begin{tabular}{|l|l|l|l|}
+\hline
+Method                                                                                     & Size & Iterations & Time (s) \\ \hline
+\multirow{4}{*}{\begin{tabular}[c]{@{}l@{}}Proximal\\ Gradient\\ Descent\end{tabular}}     & 100  & 174        & 0.016243 \\ \cline{2-4} 
+                                                                                            & 200  & 26         & 0.012325 \\ \cline{2-4} 
+                                                                                            & 400  & 1187       & 0.034683 \\ \cline{2-4} 
+                                                                                            & 800  & 451        & 0.030349 \\ \hline
+\multirow{4}{*}{\begin{tabular}[c]{@{}l@{}}Primal\\ Dual\\ Hybrid\\ Gradient\end{tabular}} & 100  & 168        & 0.052629 \\ \cline{2-4} 
+                                                                                            & 200  & 28         & 0.059517 \\ \cline{2-4} 
+                                                                                            & 400  & 1151       & 3.294508 \\ \cline{2-4} 
+                                                                                            & 800  & 410        & 4.977218 \\ \hline
+\end{tabular}
+\caption{Proximal Gradient Descent with step-size 1. PDHG with $\tau,\sigma=1$. $\epsilon=1e^{-8}$}
+\label{tab:table1}
+\end{table}
+Observe the nearly perfectly linear decrease in iteration count as step size if increased.
+This supports the convergence results, and supports the idea that
+the method could be a one step method if only the projection onto the domain were easy.
+
+\begin{table}[]
+\begin{tabular}{|l|l|l|}
+\hline
+Step-size & Iterations & Time (s) \\ \hline
+0.1       & 24997      & 0.710039 \\ \hline
+1         & 2500       & 0.220781 \\ \hline
+10        & 250        & 0.074505 \\ \hline
+100       & 25         & 0.025276 \\ \hline
+\end{tabular}
+\caption{Proximal Gradient Descent with 1000 dimensions. $\epsilon=1e^{-8}$.}
+\label{tab:table2}
+\end{table}
+We observe that proximal gradient descent does indeed decrease linearly with increases
+in step size. This would result in an amazing one step convergence method for linear
+programming if only the projection were easy.
+
+\subsection{General Convex Polytope}
+We assume that the simplex result is the true solution when measuring the
+convergence of PDHG, which is a reasonable assumption given that the method is close
+to machine precision exact. Note that the simplex method used here operates on the
+dual problem.
+\begin{table}[]
+\begin{tabular}{|l|l|l|l|}
+\hline
+Method                                                                                     & Size & Iterations & \multicolumn{1}{c|}{Time (s)} \\ \hline
+\multirow{3}{*}{Simplex}                                                                   & 5    & 1          & 0.226895                      \\ \cline{2-4} 
+                                                                                            & 20   & 3          & 0.039679                      \\ \cline{2-4} 
+                                                                                            & 80   & 16         & 0.033798                      \\ \hline
+\multirow{3}{*}{\begin{tabular}[c]{@{}l@{}}PDHG\end{tabular}} & 5    & 593        & 0.013561                      \\ \cline{2-4} 
+                                                                                            & 20   & 3479       & 0.095417                      \\ \cline{2-4} 
+                                                                                            & 80   & 400810     & 20.087422                     \\ \hline
+\multirow{3}{*}{\begin{tabular}[c]{@{}l@{}}Interior\\ Point\end{tabular}}                  & 5    & 6          & 0.008945                      \\ \cline{2-4} 
+                                                                                            & 20   & 8          & 0.045574                      \\ \cline{2-4} 
+                                                                                            & 80   & 13         & 0.226315                      \\ \hline
+\end{tabular}
+\caption{PDHG with $\tau=\sigma=\frac{1}{\|A\|}$ and $\epsilon = 1e^{-6}$.}
+\label{tab:table3}
+\end{table}
+From the results, PDHG require far more iterations that either simplex
+and interior point methods, and correspondingly orders of magnitude more time.
+
+%-------------------------------------------------------------------------------
+\section*{Availability}
+%-------------------------------------------------------------------------------
+All code used can be found on \url{https://github.com/zeroblackalpha/Math273A}.
+
+%-------------------------------------------------------------------------------
+\bibliographystyle{plain}
+\bibliography{\jobname}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\end{document}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%  LocalWords:  endnotes includegraphics fread ptr nobj noindent
+%%  LocalWords:  pdflatex acks
